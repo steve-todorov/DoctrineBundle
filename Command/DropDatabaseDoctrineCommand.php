@@ -84,6 +84,15 @@ EOT
             // Reopen connection without database name set
             // as some vendors do not allow dropping the database connected to.
             $connection->close();
+
+            // PDO (postgresql) assumes dbname to be the same as username when it's not defined in the dsn.
+            // In PostgreSQL this results in an exception
+            //    SQLSTATE[55006]: Object in use: 7 ERROR: cannot drop the currently open database
+            if($params['driver'] == 'pdo_pgsql')
+            {
+                $params['dbname'] = 'template1';
+            }
+
             $connection = DriverManager::getConnection($params);
             $shouldDropDatabase = !$ifExists || in_array($name, $connection->getSchemaManager()->listDatabases());
 

@@ -70,6 +70,13 @@ EOT
         }
         unset($params['dbname']);
 
+        // PDO (postgresql) assumes dbname to be the same as username when it's not defined in the dsn.
+        // In PostgreSQL this results in an exception because PDO is trying to connect to a non-existing database.
+        if($params['driver'] == 'pdo_pgsql')
+        {
+            $params['dbname'] = 'template1';
+        }
+
         $tmpConnection = DriverManager::getConnection($params);
         $shouldNotCreateDatabase = $ifNotExists && in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
 
